@@ -2,6 +2,7 @@ const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
 require('dotenv').config();
+const fileupload = require('express-fileupload')
 
 const userRoute = require('./Route/UserRoute')
 
@@ -9,6 +10,7 @@ const app = express();
 
 app.use(cors())
 
+app.use(fileupload())
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 app.use('/auth',userRoute)

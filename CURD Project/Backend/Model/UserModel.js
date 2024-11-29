@@ -4,19 +4,33 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      require: true,
-      unique: true, 
+      required: true,
     },
-    email:{
-        type:String,
-        require:true
+    email: {
+      type: String,
+      required: true,
+      unique: true,
     },
-    password:{
-        type:String,
-        require:true
+    password: {
+      type: String,
+      required: true,
     },
+    dob: {
+      type: Date,
+    },
+    image: {
+      type: String,
+      required: false,
+    },
+    otp: {
+      type: Number,
+      required: false,
+    },
+    otpExpiry:{
+      type:String
+    }
   },
   { versionKey: false, timestamps: true }
 );
 
-module.exports = mongoose.model('data',userSchema);
+module.exports = mongoose.model("data", userSchema);
