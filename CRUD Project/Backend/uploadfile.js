@@ -9,12 +9,11 @@ cloudinary.config({
 
 
 exports.uploadFile = async (data)=>{
-
-    const fileArray = Object.values(data)
-    console.log("fileArray",fileArray);
-    const results = []
-
-    for (const file of fileArray) {
+  const fileArray = Object.values(data)
+  console.log("fileArray>>>>>",fileArray);
+  const results = []
+  
+  for (const file of fileArray) {
         try {
           const result = await new Promise((resolve, reject) => {
             cloudinary.uploader.upload_stream((result, error) => {
@@ -24,8 +23,9 @@ exports.uploadFile = async (data)=>{
               resolve(result);
             }
           ).end(file.data)
-          })
-    
+        })
+        
+        console.log("<<daat>>",file.data)
           results.push(result)
     
         } catch (error) {

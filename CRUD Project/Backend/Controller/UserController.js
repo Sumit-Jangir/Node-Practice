@@ -12,13 +12,11 @@ const createOtp = async () => {
 };
 
 exports.addUser = async (req, res) => {
-
   try {
-
     const uploadedfile = await uploadFile(req.files);
-    const otpExpiryTime = moment().add(1, "minutes");
+    const otpExpiryTime = moment().add(10, "minutes");
     const randomOTP = await createOtp();
-    console.log("<<<<<<uploadfile>>>>>>",uploadedfile[0].url);
+    console.log("<<<<<<uploadfile>>>>>>", uploadedfile[0].url);
     const { name, email, password } = req.body;
 
     if (!(name && email && password)) {
@@ -37,8 +35,8 @@ exports.addUser = async (req, res) => {
       name,
       email,
       password: hash,
-      image:uploadedfile[0].url,
-      otp:randomOTP,
+      image: uploadedfile[0].url,
+      otp: randomOTP,
       otpExpiry: otpExpiryTime,
     };
 
@@ -105,7 +103,7 @@ exports.login = async (req, res) => {
     const matchData = await bcrypt.compare(password, dbPassword);
 
     console.log("<<<<<match>>>>>", matchData);
-    if (!matchData){
+    if (!matchData) {
       return res.status(400).json({ message: "invalid password" });
     }
     console.log("<<otp>>", otp, "<<<<user.otp>>>>", user.otp);
@@ -119,7 +117,7 @@ exports.login = async (req, res) => {
     if (otp === user.otp) {
       // let user1 = await userModel.findOne({ email });
       user.otp = undefined;
-      user.save();
+      await user.save();
       console.log("<<<<<user >>>>>", user);
     }
 
