@@ -1,4 +1,5 @@
 const userModel = require("../Model/UserModel");
+const loginData = require("../Model/loginData")
 
 require("dotenv").config();
 const bcrypt = require("bcrypt");
@@ -14,7 +15,7 @@ const createOtp = async () => {
 exports.addUser = async (req, res) => {
   try {
     const uploadedfile = await uploadFile(req.files);
-    const otpExpiryTime = moment().add(10, "minutes");
+    const otpExpiryTime = moment().add(100, "minutes");
     const randomOTP = await createOtp();
     console.log("<<<<<<uploadfile>>>>>>", uploadedfile[0].url);
     const { name, email, password } = req.body;
@@ -98,28 +99,57 @@ exports.login = async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: "Please signup" });
     }
+    const _id = user._id;
+    const user1 = await loginData.find({user:_id}).populate("data")
+    console.log("populate",user1)
+
     const dbPassword = user.password;
 
     const matchData = await bcrypt.compare(password, dbPassword);
 
-    console.log("<<<<<match>>>>>", matchData);
+    // console.log("<<<<<match>>>>>", user);
     if (!matchData) {
       return res.status(400).json({ message: "invalid password" });
     }
-    console.log("<<otp>>", otp, "<<<<user.otp>>>>", user.otp);
-    const isOtpExpired = moment().isAfter(user.otpExpiry);
-    if (isOtpExpired) {
-      return res.status(400).json({ message: "OTP has expired" });
-    }
+    // console.log("<<otp>>", otp, "<<<<user.otp>>>>", user.otp);
+    // const isOtpExpired = moment().isAfter(user.otpExpiry);
+    // if (isOtpExpired) {
+    //   return res.status(400).json({ message: "OTP has expired" });
+    // } 
     if (!(otp === user.otp)) {
       return res.status(400).json({ message: "invalid Otp" });
     }
-    if (otp === user.otp) {
-      // let user1 = await userModel.findOne({ email });
-      user.otp = undefined;
-      await user.save();
-      console.log("<<<<<user >>>>>", user);
-    }
+    // if (otp === user.otp) {
+      // let user1 = await loginData.find();
+
+      const loginuser = await loginData.find({user: user._id});
+      
+      if(loginuser.length > 0){
+        const lastLoginData = loginuser[loginuser.length - 1];
+        const countValue = lastLoginData.count + 1;
+        // console.log(countValue)
+        var loginDetail = {
+          count: countValue,
+          user: user._id
+        }
+      }
+      else{
+        var loginDetail = {
+          count: 1,
+          user: user._id
+        }
+      }
+      
+      const loginDataSave = new loginData(loginDetail)
+      await loginDataSave.save();
+
+
+      // user.otp = undefined;
+      // let count = user.loginCount;
+      // user.loginCount = ++count;
+      // await user.save();
+      // console.log("<<<<<user >>>>>", user1);
+    // }
 
     const token = jwt.sign(
       { id: user._id },
@@ -131,6 +161,6 @@ exports.login = async (req, res) => {
 
     return res.status(200).json({ token, message: "user login successfully" });
   } catch (error) {
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error",error:error });
   }
 };
